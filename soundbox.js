@@ -68,10 +68,14 @@ function getUserVoiceChannelId(userId) {
 function playMp3File(localFileName) {
     //Create a stream to your file and pipe it to the stream
     //Without {end: false}, it would close up the stream, so make sure to include that.
-    actualStream.cork();
     var filePath = path.join(__dirname, 'assets', localFileName);
-    fs.createReadStream(filePath).pipe(actualStream, { end: false });
-    actualStream.uncork();
+    if (fs.existsSync(filePath)) {
+        actualStream.cork();
+        fs.createReadStream(filePath).pipe(actualStream, { end: false });
+        process.nextTick(() => actualStream.uncork());
+    } else {
+        logger.info(filePath + ' not found');
+    }
 }
 
 function joinVoiceChannel(voiceChannelId) {
